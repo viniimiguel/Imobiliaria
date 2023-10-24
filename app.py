@@ -27,7 +27,6 @@ class Imovel():
         self.driver.maximize_window()
 
     def raspagem(self):
-        sleep(20)
         global armazena_logradouro, armazena_rua, armazena_descricao, armazena_metragem, armazena_comodos, armazena_banheiros, armazena_vagas, armazena_valor
 
         armazena_logradouro = []
@@ -51,7 +50,7 @@ class Imovel():
                         'descricao': f'/html/body/div[1]/main/section/div/form/div[2]/div[2]/div[1]/div[2]/div[{contador}]/div/a/div/div/div[2]/div[2]/p',
                         'info': f'/html/body/div[1]/main/section/div/form/div[2]/div[2]/div[1]/div[2]/div[{contador}]/div/a/div/div/div[2]/section',
                         'valor': f'/html/body/div[1]/main/section/div/form/div[2]/div[2]/div[1]/div[2]/div[{contador}]/div/a/div/div/div[2]/div[3]/div[1]/p',
-                        'button_next': f'/html/body/div[1]/main/section/div/form/div[2]/div[2]/div[2]/div/section/div/div[2]/div[2]/nav/button[2]',
+                        'button_next': f'/html/body/div[1]/main/section/div/form/div[2]/div[2]/div[1]/div[2]/section/nav/button[2]',
                     }
                 }
 
@@ -73,7 +72,7 @@ class Imovel():
                     metragem = " ".join(metragems)
                     comodos = partes[2]
                     banheiros = partes[3]
-                    vagas = partes[4]
+                    vagas = partes[4] if len(partes) > 4 else '0'
 
                     print("Metragem:", metragem)
                     print("Comodos:", comodos)
@@ -98,12 +97,22 @@ class Imovel():
                 print(info.text)
                 print(valor.text)
                 print('###'*40)
-                sleep(0.5)
 
                 contador += 1
 
             except NoSuchElementException:
-                break
+                try:
+                    button_next = self.driver.find_element(By.XPATH, xpats['XP']['button_next'])
+                    if button_next:
+                        button_next.click()
+                        contador = 1
+                        sleep(5)
+                except NoSuchElementException:
+                    print('raspagem finalizada')
+                    break
+                except Exception as e:
+                    print('ops!!! ocorreu um error inesperado {e}')
+                    break
     
     def cria_planilhas(self):
         planilha = openpyxl.Workbook()
